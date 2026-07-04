@@ -9,7 +9,8 @@ on:
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
   REGION: europe-west1
-  REPO: graphrag-platform-dev-images
+  ENVIRONMENT: prod
+  REPO: graphrag-platform-prod-images
 
 permissions:
   contents: read
@@ -98,13 +99,14 @@ jobs:
           terraform plan \
             -var="project_id=${{ env.PROJECT_ID }}" \
             -var="region=${{ env.REGION }}" \
-            -var="environment=prod" \
+            -var="environment=${{ env.ENVIRONMENT }}" \
             -var="container_image_backend=${{ env.BACKEND_IMAGE }}" \
             -var="container_image_frontend=${{ env.FRONTEND_IMAGE }}" \
             -var="neo4j_uri=${{ secrets.NEO4J_URI }}" \
             -var="neo4j_user=${{ secrets.NEO4J_USER }}" \
             -var="neo4j_password=${{ secrets.NEO4J_PASSWORD }}" \
             -var="github_repo=${{ github.repository }}" \
+            -var="admin_emails=${{ secrets.ADMIN_EMAILS }}" \
             -out=tfplan
 
       - name: Terraform Apply
