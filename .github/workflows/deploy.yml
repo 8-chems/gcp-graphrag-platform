@@ -9,8 +9,8 @@ on:
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
   REGION: europe-west1
-  ENVIRONMENT: prod
-  REPO: graphrag-platform-prod-images
+  ENVIRONMENT: dev
+  REPO: graphrag-platform-dev-images
 
 permissions:
   contents: read
