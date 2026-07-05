@@ -98,7 +98,16 @@ export async function uploadDocument(
   });
 
   if (!response.ok) {
-    throw new Error(`Upload failed: ${response.status}`);
+    let detail = `Upload failed: ${response.status}`;
+    try {
+      const body = await response.json();
+      if (body?.detail) {
+        detail = typeof body.detail === "string" ? body.detail : JSON.stringify(body.detail);
+      }
+    } catch {
+      // ignore non-JSON error bodies
+    }
+    throw new Error(detail);
   }
   return response.json();
 }

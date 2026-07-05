@@ -77,43 +77,64 @@ async def extract_triples(text: str) -> list[tuple[str, str, str]]:
 
 async def ingest_document(data: bytes, filename: str, gcs_path: str) -> dict:
     document_id = await sql_tool.record_document(filename=filename, gcs_path=gcs_path)
-
-    text = extract_text_from_pdf(data)
-    chunk_texts = semantic_chunk(text)
-
-    chunks = [
-        Chunk(chunk_id=str(uuid.uuid4()), document_id=document_id, content=c, source=filename)
-        for c in chunk_texts
-    ]
-
-    chunks_created = vector_tool.upsert_chunks(chunks) if chunks else 0
-
-    all_triples: list[tuple[str, str, str]] = []
-    for chunk_text in chunk_texts:
-        triples = await extract_triples(chunk_text)
-        all_triples.extend(triples)
-
+    chunks_created = 0
+    entities: set[str] = set()
     relationships_created = 0
-    entities = set()
-    if all_triples:
-        await neo4j_tool.ensure_constraints()
-        relationships_created = await neo4j_tool.upsert_triples(all_triples, document_id)
-        for s, _, o in all_triples:
-            entities.update([s, o])
 
-    await sql_tool.update_document_stats(
-        document_id=document_id,
-        chunks=chunks_created,
-        entities=len(entities),
-        relationships=relationships_created,
-        status="completed",
-    )
+    try:
+        text = extract_text_from_pdf(data)
+        if not text.strip():
+            raise ValueError("PDF contains no extractable text")
 
-    return {
-        "document_id": document_id,
-        "filename": filename,
-        "chunks_created": chunks_created,
-        "entities_extracted": len(entities),
-        "relationships_extracted": relationships_created,
-        "status": "completed",
-    }
+        chunk_texts = semantic_chunk(text)
+        chunks = [
+            Chunk(chunk_id=str(uuid.uuid4()), document_id=document_id, content=c, source=filename)
+            for c in chunk_texts
+        ]
+
+        chunks_created = vector_tool.upsert_chunks(chunks) if chunks else 0
+
+        all_triples: list[tuple[str, str, str]] = []
+        for chunk_text in chunk_texts:
+            triples = await extract_triples(chunk_text)
+            all_triples.extend(triples)
+
+        if all_triples:
+            try:
+                await neo4j_tool.ensure_constraints()
+                relationships_created = await neo4j_tool.upsert_triples(all_triples, document_id)
+                for s, _, o in all_triples:
+                    entities.update([s, o])
+            except Exception as exc:  # noqa: BLE001
+                logger.warning(
+                    "Neo4j graph ingestion skipped for %s (%s): %s",
+                    filename,
+                    document_id,
+                    exc,
+                )
+
+        await sql_tool.update_document_stats(
+            document_id=document_id,
+            chunks=chunks_created,
+            entities=len(entities),
+            relationships=relationships_created,
+            status="completed",
+        )
+
+        return {
+            "document_id": document_id,
+            "filename": filename,
+            "chunks_created": chunks_created,
+            "entities_extracted": len(entities),
+            "relationships_extracted": relationships_created,
+            "status": "completed",
+        }
+    except Exception:
+        await sql_tool.update_document_stats(
+            document_id=document_id,
+            chunks=chunks_created,
+            entities=len(entities),
+            relationships=relationships_created,
+            status="failed",
+        )
+        raise

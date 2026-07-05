@@ -98,7 +98,8 @@ def upsert_chunks(chunks: list[Chunk]) -> int:
     errors = client.insert_rows_json(full_table_id(), rows)
     if errors:
         logger.error("BigQuery insert errors: %s", errors)
-    return len(rows) - len(errors)
+        raise RuntimeError(f"BigQuery insert failed: {errors}")
+    return len(rows)
 
 
 def semantic_search(query: str, top_k: int = 5) -> list[dict]:

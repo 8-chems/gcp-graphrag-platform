@@ -30,6 +30,7 @@ export default function AdminDashboard() {
     if (!file) return;
 
     setUploadStatus(`Uploading ${file.name}…`);
+    setError("");
     try {
       const result = await uploadDocument(file, getIdToken);
       setUploadStatus(
@@ -37,8 +38,11 @@ export default function AdminDashboard() {
           `${result.entities_extracted} entities, ${result.relationships_extracted} relationships.`
       );
       await refresh();
-    } catch {
-      setUploadStatus("Upload failed. Please try again.");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Upload failed. Please try again.";
+      setUploadStatus("");
+      setError(message);
+      await refresh();
     } finally {
       e.target.value = "";
     }

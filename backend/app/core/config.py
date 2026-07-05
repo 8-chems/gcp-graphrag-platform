@@ -48,7 +48,7 @@ class Settings(BaseSettings):
     neo4j_uri: str = "bolt://localhost:7687"
     neo4j_user: str = "neo4j"
     neo4j_password: str = "change-me"
-    neo4j_database: str = "neo4j"
+    neo4j_database: str = ""  # leave empty for Aura/server default; set explicitly if needed
 
     # --- Cloud Storage ---
     gcs_bucket: str = "your-project-documents"

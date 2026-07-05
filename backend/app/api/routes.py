@@ -76,16 +76,25 @@ async def upload_document(
     file: UploadFile = File(...),
     admin: dict = Depends(get_current_admin),
 ) -> IngestResponse:
-    if file.content_type != "application/pdf":
+    filename = file.filename or "upload.pdf"
+    if file.content_type not in ("application/pdf", "application/octet-stream"):
+        raise HTTPException(status_code=400, detail="Only PDF uploads are supported")
+    if not filename.lower().endswith(".pdf"):
         raise HTTPException(status_code=400, detail="Only PDF uploads are supported")
 
     data = await file.read()
-    gcs_path = storage_tool.upload_bytes(data, filename=file.filename, content_type=file.content_type)
+    if not data:
+        raise HTTPException(status_code=400, detail="Uploaded file is empty")
 
     try:
-        result = await ingestion.ingest_document(data, filename=file.filename, gcs_path=gcs_path)
+        gcs_path = storage_tool.upload_bytes(
+            data, filename=filename, content_type=file.content_type or "application/pdf"
+        )
+        result = await ingestion.ingest_document(data, filename=filename, gcs_path=gcs_path)
+    except HTTPException:
+        raise
     except Exception as exc:  # noqa: BLE001
-        logger.exception("Ingestion failed for %s", file.filename)
+        logger.exception("Ingestion failed for %s", filename)
         raise HTTPException(status_code=500, detail="Document ingestion failed") from exc
 
     return IngestResponse(**result)

@@ -27,6 +27,13 @@ async def get_driver() -> AsyncDriver:
     return _driver
 
 
+def _open_session(driver: AsyncDriver):
+    """Omit database name when unset so Aura uses the instance default."""
+    if settings.neo4j_database:
+        return driver.session(database=settings.neo4j_database)
+    return driver.session()
+
+
 async def close_driver() -> None:
     global _driver
     if _driver is not None:
@@ -47,7 +54,7 @@ async def verify_connectivity() -> bool:
 async def ensure_constraints() -> None:
     """Create uniqueness constraints so MERGE operations stay idempotent."""
     driver = await get_driver()
-    async with driver.session(database=settings.neo4j_database) as session:
+    async with _open_session(driver) as session:
         await session.run(
             "CREATE CONSTRAINT entity_name IF NOT EXISTS "
             "FOR (e:Entity) REQUIRE e.name IS UNIQUE"
@@ -69,7 +76,7 @@ async def upsert_triples(triples: list[tuple[str, str, str]], document_id: str) 
     RETURN count(r) AS created
     """
     rows = [{"subject": s, "relation": r, "object": o} for s, r, o in triples]
-    async with driver.session(database=settings.neo4j_database) as session:
+    async with _open_session(driver) as session:
         result = await session.run(query, rows=rows, document_id=document_id)
         record = await result.single()
         return record["created"] if record else 0
@@ -78,7 +85,7 @@ async def upsert_triples(triples: list[tuple[str, str, str]], document_id: str) 
 async def run_cypher(cypher: str, params: dict[str, Any] | None = None) -> list[dict[str, Any]]:
     """Execute an arbitrary read-only Cypher query and return records as dicts."""
     driver = await get_driver()
-    async with driver.session(database=settings.neo4j_database) as session:
+    async with _open_session(driver) as session:
         result = await session.run(cypher, params or {})
         return [dict(record) async for record in result]
 
@@ -117,7 +124,7 @@ async def delete_by_document(document_id: str) -> int:
     DELETE n
     RETURN count(n) AS orphans_removed
     """
-    async with driver.session(database=settings.neo4j_database) as session:
+    async with _open_session(driver) as session:
         result = await session.run(query, document_id=document_id)
         record = await result.single()
         return record["orphans_removed"] if record else 0
