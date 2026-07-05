@@ -31,7 +31,14 @@ Push-Location terraform
 $BackendUrl = ""
 try { $BackendUrl = (terraform output -raw backend_url) } catch { $BackendUrl = "" }
 Pop-Location
-docker build -t $FrontendImage --build-arg VITE_API_URL=$BackendUrl ./frontend
+$FirebaseAuthDomain = if ($env:FIREBASE_AUTH_DOMAIN) { $env:FIREBASE_AUTH_DOMAIN } else { "$ProjectId.firebaseapp.com" }
+if (-not $env:FIREBASE_API_KEY) { throw "Set FIREBASE_API_KEY (Firebase console -> Project settings -> Web API key)" }
+docker build -t $FrontendImage `
+  --build-arg VITE_API_URL=$BackendUrl `
+  --build-arg VITE_FIREBASE_API_KEY=$env:FIREBASE_API_KEY `
+  --build-arg VITE_FIREBASE_AUTH_DOMAIN=$FirebaseAuthDomain `
+  --build-arg VITE_FIREBASE_PROJECT_ID=$ProjectId `
+  ./frontend
 docker push $FrontendImage
 
 Write-Host "==> Running Terraform apply"

@@ -42,6 +42,10 @@ resource "google_cloud_run_v2_service" "backend" {
         value = var.project_id
       }
       env {
+        name  = "FIREBASE_PROJECT_ID"
+        value = local.firebase_project_id
+      }
+      env {
         name  = "REGION"
         value = var.region
       }

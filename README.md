@@ -75,6 +75,34 @@ If you don't already have a GCP project, you can create one using the Google Clo
    gcloud beta billing projects link <PROJECT_ID> --billing-account=<ACCOUNT_ID>
    ```
 
+### Firebase Auth (frontend sign-in)
+
+The frontend bakes Firebase config into the Docker image at **build time** (`VITE_*` vars).
+
+1. Open [Firebase Console](https://console.firebase.google.com/) → select project **`my-graphrag-project`** (same GCP project).
+2. **Build → Authentication → Sign-in method** → enable **Google**.
+3. **Project settings** (gear icon) → **General** → **Your apps** → add a **Web app** if you don't have one.
+4. Copy the **Web API Key** from the Firebase config snippet.
+
+**Local dev** — create `frontend/.env`:
+
+```bash
+VITE_API_URL=http://localhost:8080
+VITE_FIREBASE_API_KEY=AIza...
+VITE_FIREBASE_AUTH_DOMAIN=my-graphrag-project.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=my-graphrag-project
+```
+
+**CI/CD** — add GitHub secrets (values from the Firebase config snippet):
+
+| Secret | Example value |
+|--------|----------------|
+| `FIREBASE_API_KEY` | `AIzaSy...` |
+| `FIREBASE_AUTH_DOMAIN` | `my-graphrag-project-d3260.firebaseapp.com` |
+| `FIREBASE_PROJECT_ID` | `my-graphrag-project-d3260` |
+
+Do **not** paste the Firebase snippet into `firebase.ts` — the app reads these via `VITE_*` build args. Also set `firebase_project_id` in `terraform.tfvars` so the backend verifies tokens against the same Firebase project.
+
 6. **Enable Required APIs:**
    Although Terraform can enable some, it's a good idea to enable the core APIs required for setup:
    ```bash
@@ -237,13 +265,18 @@ lint/compile check → frontend build → Docker build & push (backend + fronten
 → `terraform plan`/`apply` → smoke test against `/api/v1/health`.
 
 Required GitHub repo secrets: `GCP_PROJECT_ID`, `WIF_PROVIDER`, `DEPLOYER_SA_EMAIL`,
-`TF_STATE_BUCKET`, `NEO4J_URI`, `NEO4J_USER`, `NEO4J_PASSWORD`, `BACKEND_URL`.
+`TF_STATE_BUCKET`, `NEO4J_URI`, `NEO4J_USER`, `NEO4J_PASSWORD`, `BACKEND_URL`,
+`FIREBASE_API_KEY`, `ADMIN_EMAILS`.
 
 | Secret | Source |
 |--------|--------|
 | `WIF_PROVIDER` | `terraform output workload_identity_provider` |
 | `DEPLOYER_SA_EMAIL` | `terraform output deployer_service_account` |
 | `TF_STATE_BUCKET` | `terraform output tf_state_bucket` — must be `…-tfstate`, **not** `…-documents-dev` |
+| `BACKEND_URL` | `terraform output -raw backend_url` |
+| `FIREBASE_API_KEY` | Firebase config → `apiKey` |
+| `FIREBASE_AUTH_DOMAIN` | Firebase config → `authDomain` |
+| `FIREBASE_PROJECT_ID` | Firebase config → `projectId` |
 
 ## Notes on production hardening
 

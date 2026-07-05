@@ -89,6 +89,9 @@ jobs:
           IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO }}/frontend:${{ github.sha }}"
           docker build -t "$IMAGE" \
             --build-arg VITE_API_URL=${{ secrets.BACKEND_URL }} \
+            --build-arg VITE_FIREBASE_API_KEY=${{ secrets.FIREBASE_API_KEY }} \
+            --build-arg VITE_FIREBASE_AUTH_DOMAIN=${{ secrets.FIREBASE_AUTH_DOMAIN }} \
+            --build-arg VITE_FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }} \
             ./frontend
           docker push "$IMAGE"
           echo "FRONTEND_IMAGE=$IMAGE" >> "$GITHUB_ENV"
@@ -112,6 +115,7 @@ jobs:
             -var="neo4j_password=${{ secrets.NEO4J_PASSWORD }}" \
             -var="github_repo=${{ github.repository }}" \
             -var="admin_emails=${{ secrets.ADMIN_EMAILS }}" \
+            -var="firebase_project_id=${{ secrets.FIREBASE_PROJECT_ID }}" \
             -out=tfplan
 
       - name: Terraform Apply

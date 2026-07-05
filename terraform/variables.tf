@@ -77,3 +77,9 @@ variable "tf_state_bucket_name" {
   type        = string
   default     = ""
 }
+
+variable "firebase_project_id" {
+  description = "Firebase project ID (from Firebase console; often differs from GCP project_id)"
+  type        = string
+  default     = ""
+}

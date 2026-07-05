@@ -35,6 +35,9 @@ services:
       context: ./frontend
       args:
         VITE_API_URL: http://localhost:8080
+        VITE_FIREBASE_API_KEY: ${VITE_FIREBASE_API_KEY:-}
+        VITE_FIREBASE_AUTH_DOMAIN: ${VITE_FIREBASE_AUTH_DOMAIN:-your-gcp-project.firebaseapp.com}
+        VITE_FIREBASE_PROJECT_ID: ${VITE_FIREBASE_PROJECT_ID:-your-gcp-project}
     ports:
       - "5173:8080"
     depends_on:
