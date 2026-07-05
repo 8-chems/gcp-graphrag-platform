@@ -112,6 +112,20 @@ resource "google_project_iam_member" "deployer_security_admin" {
   member  = "serviceAccount:${google_service_account.deployer_sa.email}"
 }
 
+# Editor lacks secretmanager.versions.access; Terraform must read/write secret versions in CI
+resource "google_project_iam_member" "deployer_secret_admin" {
+  project = var.project_id
+  role    = "roles/secretmanager.admin"
+  member  = "serviceAccount:${google_service_account.deployer_sa.email}"
+}
+
+# Dataset uses legacy ACL (access blocks); project Editor alone cannot read tables
+resource "google_project_iam_member" "deployer_bigquery_admin" {
+  project = var.project_id
+  role    = "roles/bigquery.admin"
+  member  = "serviceAccount:${google_service_account.deployer_sa.email}"
+}
+
 # Remote state bucket is bootstrapped outside Terraform; grant deployer access for terraform init
 resource "google_storage_bucket_iam_member" "deployer_tfstate" {
   bucket = local.tf_state_bucket

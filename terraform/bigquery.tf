@@ -13,6 +13,11 @@ resource "google_bigquery_dataset" "graphrag" {
 
   access {
     role          = "OWNER"
+    user_by_email = google_service_account.deployer_sa.email
+  }
+
+  access {
+    role          = "OWNER"
     special_group = "projectOwners"
   }
 }
