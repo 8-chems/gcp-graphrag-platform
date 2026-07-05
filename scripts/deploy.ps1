@@ -41,6 +41,7 @@ terraform apply `
   -var="project_id=$ProjectId" `
   -var="region=$Region" `
   -var="environment=$Environment" `
+  -var="tf_state_bucket_name=$ProjectId-graphrag-platform-tfstate" `
   -var="container_image_backend=$BackendImage" `
   -var="container_image_frontend=$FrontendImage"
 

@@ -215,9 +215,13 @@ Artifact Registry repo, service accounts + IAM bindings, Secret Manager entries
 for Neo4j/SQL credentials, and a Workload Identity Federation pool for GitHub
 Actions (no long-lived JSON key needed in CI).
 
-> The Terraform state bucket (`storage.tf` → `tf_state`) needs to exist before
-> `terraform init` if you haven't run `apply` once already — create it manually
-> the first time, or point `-backend-config` at an existing bucket.
+> The Terraform state bucket must exist **before** the first `terraform init`.
+> Create it once, then grant your deployer SA access until Terraform manages it:
+>
+> ```bash
+> ./scripts/bootstrap-tf-state.sh your-gcp-project
+> # or on Windows: .\scripts\bootstrap-tf-state.ps1 -ProjectId your-gcp-project
+> ```
 
 ## Manual deploy (build + push + apply in one step)
 
@@ -234,8 +238,12 @@ lint/compile check → frontend build → Docker build & push (backend + fronten
 
 Required GitHub repo secrets: `GCP_PROJECT_ID`, `WIF_PROVIDER`, `DEPLOYER_SA_EMAIL`,
 `TF_STATE_BUCKET`, `NEO4J_URI`, `NEO4J_USER`, `NEO4J_PASSWORD`, `BACKEND_URL`.
-The first three come straight out of the Terraform `outputs.tf` after the initial
-manual `apply`.
+
+| Secret | Source |
+|--------|--------|
+| `WIF_PROVIDER` | `terraform output workload_identity_provider` |
+| `DEPLOYER_SA_EMAIL` | `terraform output deployer_service_account` |
+| `TF_STATE_BUCKET` | `terraform output tf_state_bucket` — must be `…-tfstate`, **not** `…-documents-dev` |
 
 ## Notes on production hardening
 

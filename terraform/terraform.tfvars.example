@@ -7,3 +7,6 @@ neo4j_user     = "neo4j"
 neo4j_password = "change-me"
 
 github_repo = "your-org/your-repo"
+
+# Must match -backend-config bucket and GitHub secret TF_STATE_BUCKET (NOT the documents bucket).
+tf_state_bucket_name = "your-gcp-project-graphrag-platform-tfstate"

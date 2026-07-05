@@ -104,6 +104,7 @@ jobs:
             -var="project_id=${{ env.PROJECT_ID }}" \
             -var="region=${{ env.REGION }}" \
             -var="environment=${{ env.ENVIRONMENT }}" \
+            -var="tf_state_bucket_name=${{ secrets.TF_STATE_BUCKET }}" \
             -var="container_image_backend=${{ env.BACKEND_IMAGE }}" \
             -var="container_image_frontend=${{ env.FRONTEND_IMAGE }}" \
             -var="neo4j_uri=${{ secrets.NEO4J_URI }}" \

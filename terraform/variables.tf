@@ -71,3 +71,9 @@ variable "admin_emails" {
   type        = string
   default     = ""
 }
+
+variable "tf_state_bucket_name" {
+  description = "GCS bucket for Terraform remote state (bootstrap bucket, created before first init)"
+  type        = string
+  default     = ""
+}

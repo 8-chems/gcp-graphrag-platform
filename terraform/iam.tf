@@ -97,3 +97,24 @@ resource "google_project_iam_member" "deployer_sa_user" {
   role    = "roles/iam.serviceAccountUser"
   member  = "serviceAccount:${google_service_account.deployer_sa.email}"
 }
+
+# Terraform plan/apply in CI (Editor covers Cloud SQL, Secret Manager, BigQuery, GCS, etc.)
+resource "google_project_iam_member" "deployer_editor" {
+  project = var.project_id
+  role    = "roles/editor"
+  member  = "serviceAccount:${google_service_account.deployer_sa.email}"
+}
+
+# Required for service accounts, project IAM bindings, and Workload Identity Federation
+resource "google_project_iam_member" "deployer_security_admin" {
+  project = var.project_id
+  role    = "roles/iam.securityAdmin"
+  member  = "serviceAccount:${google_service_account.deployer_sa.email}"
+}
+
+# Remote state bucket is bootstrapped outside Terraform; grant deployer access for terraform init
+resource "google_storage_bucket_iam_member" "deployer_tfstate" {
+  bucket = local.tf_state_bucket
+  role   = "roles/storage.objectAdmin"
+  member = "serviceAccount:${google_service_account.deployer_sa.email}"
+}

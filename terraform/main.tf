@@ -23,7 +23,8 @@ provider "google" {
 }
 
 locals {
-  name_prefix = "${var.app_name}-${var.environment}"
+  name_prefix       = "${var.app_name}-${var.environment}"
+  tf_state_bucket   = var.tf_state_bucket_name != "" ? var.tf_state_bucket_name : "${var.project_id}-${var.app_name}-tfstate"
   labels = {
     app         = var.app_name
     environment = var.environment

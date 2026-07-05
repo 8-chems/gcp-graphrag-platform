@@ -31,6 +31,7 @@ terraform apply \
   -var="project_id=${PROJECT_ID}" \
   -var="region=${REGION}" \
   -var="environment=${ENVIRONMENT}" \
+  -var="tf_state_bucket_name=${PROJECT_ID}-graphrag-platform-tfstate" \
   -var="container_image_backend=${BACKEND_IMAGE}" \
   -var="container_image_frontend=${FRONTEND_IMAGE}"
 

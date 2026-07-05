@@ -25,3 +25,8 @@ output "workload_identity_provider" {
 output "deployer_service_account" {
   value = google_service_account.deployer_sa.email
 }
+
+output "tf_state_bucket" {
+  description = "Set GitHub secret TF_STATE_BUCKET to this value (not the documents bucket)"
+  value       = local.tf_state_bucket
+}
