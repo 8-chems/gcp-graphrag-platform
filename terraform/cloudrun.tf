@@ -79,6 +79,10 @@ resource "google_cloud_run_v2_service" "backend" {
         value = var.admin_emails
       }
       env {
+        name  = "CORS_ORIGINS"
+        value = "http://localhost:5173,${google_cloud_run_v2_service.frontend.uri}"
+      }
+      env {
         name = "NEO4J_URI"
         value_source {
           secret_key_ref {
