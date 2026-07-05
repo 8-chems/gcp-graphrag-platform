@@ -4,6 +4,8 @@ All values are sourced from environment variables (populated via Secret Manager
 in Cloud Run, or a local .env file for development).
 """
 from functools import lru_cache
+from urllib.parse import quote_plus
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -31,10 +33,12 @@ class Settings(BaseSettings):
 
     @property
     def sql_url(self) -> str:
-        return (
-            f"postgresql+asyncpg://{self.sql_user}:{self.sql_password}"
-            f"@{self.sql_host}:{self.sql_port}/{self.sql_db}"
-        )
+        user = quote_plus(self.sql_user)
+        password = quote_plus(self.sql_password)
+        if self.sql_host.startswith("/"):
+            # Cloud Run mounts the instance socket at /cloudsql/PROJECT:REGION:INSTANCE
+            return f"postgresql+asyncpg://{user}:{password}@/{self.sql_db}?host={quote_plus(self.sql_host)}"
+        return f"postgresql+asyncpg://{user}:{password}@{self.sql_host}:{self.sql_port}/{self.sql_db}"
 
     # --- BigQuery ---
     bq_dataset: str = "graphrag"
