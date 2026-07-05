@@ -30,6 +30,9 @@ Respond ONLY with JSON in this exact shape, no prose, no markdown fences:
 Pick the minimal set of agents required. Combine agents only when the question
 genuinely needs evidence from more than one source (e.g. "explain how X influenced Y using evidence"
 needs both graph and rag).
+
+Always include "rag" for questions about people, roles, biographies, definitions,
+or anything that might be answered from uploaded documents (e.g. "who is X", "what does X do").
 """
 
 

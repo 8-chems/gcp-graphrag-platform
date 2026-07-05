@@ -123,7 +123,7 @@ def semantic_search(query: str, top_k: int = 5) -> list[dict]:
       (SELECT @query_vector AS embedding),
       top_k => @top_k,
       distance_type => 'COSINE'
-    ) AS base
+    )
     ORDER BY distance ASC
     """
     job_config = bigquery.QueryJobConfig(

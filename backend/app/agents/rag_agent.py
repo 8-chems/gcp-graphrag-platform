@@ -16,6 +16,9 @@ async def retrieve(question: str, top_k: int = 5) -> list[SourceChunk]:
         logger.error("Vector search failed: %s", exc)
         return []
 
+    if not rows:
+        logger.warning("Vector search returned no chunks for question: %s", question[:120])
+
     return [
         SourceChunk(
             content=row["content"],
