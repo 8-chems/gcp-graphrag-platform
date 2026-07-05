@@ -83,3 +83,9 @@ variable "firebase_project_id" {
   type        = string
   default     = ""
 }
+
+variable "gemini_model" {
+  description = "Vertex AI Gemini model ID (must be available in var.region)"
+  type        = string
+  default     = "gemini-2.5-flash"
+}

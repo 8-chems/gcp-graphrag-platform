@@ -18,7 +18,7 @@ class Settings(BaseSettings):
 
     # --- Vertex AI ---
     vertex_location: str = "europe-west1"
-    gemini_model: str = "gemini-1.5-pro-002"
+    gemini_model: str = "gemini-2.5-flash"
     embedding_model: str = "text-embedding-004"
 
     # --- Cloud SQL (Postgres) ---
