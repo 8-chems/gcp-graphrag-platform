@@ -10,6 +10,7 @@ from __future__ import annotations
 import logging
 import uuid
 from dataclasses import dataclass
+from datetime import datetime, timezone
 
 from google.cloud import bigquery
 from langchain_google_vertexai import VertexAIEmbeddings
@@ -90,7 +91,7 @@ def upsert_chunks(chunks: list[Chunk]) -> int:
             "source": c.source,
             "content": c.content,
             "embedding": vec,
-            "created_at": bigquery.datetime.datetime.utcnow().isoformat(),
+            "created_at": datetime.now(timezone.utc).isoformat(),
         }
         for c, vec in zip(chunks, vectors)
     ]
